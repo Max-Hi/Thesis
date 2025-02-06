@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
+from sklearn.decomposition import PCA
 
 import inspect
 import os
@@ -10,14 +11,14 @@ from typing import List, Callable, Tuple
 from visual import visual
 
 
-def evaluate_diff(model, num_samples: int, form_function: Callable, ranges: List[Tuple[float]], save: bool, save_path: str) -> None:
+def evaluate_diff(model, num_samples: int, form_function: Callable, ranges: List[Tuple[float]], save: bool, save_path: str, extra_parameters: List = []) -> None:
     
     sig = inspect.signature(form_function)
-    num_parameters = len(sig.parameters)
-    assert len(ranges) == num_parameters, f"Expected {num_parameters} arguments for evaluation, got {len(ranges)}"
+    num_required_params = len([param for param in sig.parameters.values() if param.default == inspect.Parameter.empty])
+    assert len(ranges) == num_required_params, f"Expected {num_required_params} arguments for evaluation, got {len(ranges)}"
     
     parameters = [np.random.uniform(r[0],r[1],num_samples) for r in ranges]
-    forms = form_function(*parameters)
+    forms = form_function(*parameters, *extra_parameters)
     
     
     samples = torch.tensor(np.column_stack((forms[0], *forms[1:])), dtype=torch.float32)
@@ -32,8 +33,6 @@ def evaluate_diff(model, num_samples: int, form_function: Callable, ranges: List
         
         sorted_indices = np.argsort(parameter)
         parameter = parameter[sorted_indices]
-        print(parameter)
-        print(parameter.shape)
         heat_values = heat_values[sorted_indices]
         
         # Plot
@@ -64,21 +63,24 @@ def evaluate_diff(model, num_samples: int, form_function: Callable, ranges: List
     plt.show()
     
     
-def evaluate_form(model, num_samples: int, form_function: Callable, ranges: List[Tuple[float]], save: bool, save_path: str) -> None:
+def evaluate_form(model, num_samples: int, form_function: Callable, ranges: List[Tuple[float]], save: bool, save_path: str, extra_parameters: List = []) -> None:
     
     sig = inspect.signature(form_function)
-    num_parameters = len(sig.parameters)
-    assert len(ranges) == num_parameters, f"Expected {num_parameters} arguments for evaluation, got {len(ranges)}"
+    num_required_params = len([param for param in sig.parameters.values() if param.default == inspect.Parameter.empty])
+    assert len(ranges) == num_required_params, f"Expected {num_required_params} arguments for evaluation, got {len(ranges)}"
     
     parameters = [np.random.uniform(r[0],r[1],num_samples) for r in ranges]
-    forms = form_function(*parameters)
+    forms = form_function(*parameters, *extra_parameters)
     
     
     samples = torch.tensor(np.column_stack((forms[0], *forms[1:])), dtype=torch.float32)
-    
     outputs = model.forward(samples).to("cpu").detach().numpy()
-    
     samples = samples.detach().numpy()
+    
+    if samples.shape[1] > 3:
+        pca = PCA(n_components=3)
+        samples = pca.fit_transform(samples)
+        outputs = pca.transform(outputs)
     
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection='3d')
