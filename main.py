@@ -21,9 +21,9 @@ print(f"Using device: {device}")
 
 # Parameters
 input_dim = 3
-epochs = 1
-form_function = datacreation.circle
-ranges = [(0,2*np.pi)] # , (0,1)]
+epochs = 100
+form_function = datacreation.bowl
+ranges = [(0,2*np.pi), (0,1)]
 dimensions = [3,128,128,64,64,32,16,8,4,2] 
 
 # dataloader

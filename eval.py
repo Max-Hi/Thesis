@@ -45,7 +45,8 @@ def evaluate_diff(model, num_samples: int, form_function: Callable, ranges: List
         
     else:
         grid_theta, grid_phi = np.meshgrid(np.linspace(ranges[0][0], ranges[0][1]), np.linspace(ranges[1][0], ranges[1][1]))
-        grid_heat = griddata((ranges[0], ranges[1]), heat_values, (grid_theta, grid_phi), method='linear')
+        points = np.column_stack((parameters[0], parameters[1]))
+        grid_heat = griddata((points), heat_values, (grid_theta, grid_phi), method='linear')
 
         # Plot heatmap
         plt.figure(figsize=(8, 6))
