@@ -20,7 +20,7 @@ def circle(phi: Union[float, np.ndarray], r: float = 1) -> Union[Tuple, np.ndarr
     else:
         raise ValueError
 
-def circle_9d(phi: Union[float, np.ndarray], r: float = 1, rotation_angles: np.ndarray = None) -> Union[Tuple, np.ndarray]:
+def circle_9d(phi: Union[float, np.ndarray], r: float = 1) -> Union[Tuple, np.ndarray]:
     """
     Parametric equation of a circle embedded in 9D space with optional rotation.
     
@@ -32,8 +32,6 @@ def circle_9d(phi: Union[float, np.ndarray], r: float = 1, rotation_angles: np.n
     Returns:
         9D coordinates of the circle point(s)
     """
-    if rotation_angles is None:
-        rotation_angles = np.array([0,0,0,0,0,0,0,0,0])
     
     # Initialize base circle in first two dimensions, rest set to 0
     if isinstance(phi, float):
@@ -42,26 +40,12 @@ def circle_9d(phi: Union[float, np.ndarray], r: float = 1, rotation_angles: np.n
         point = np.column_stack((
             r*np.cos(phi),
             r*np.sin(phi),
-            np.zeros((len(phi), 7))
+            r*np.cos(phi) + r*np.sin(phi),
+            r*np.cos(phi) - r*np.sin(phi),
+            np.zeros((len(phi), 5))
         ))
     else:
         raise ValueError("phi must be float or ndarray")
-    
-    # Apply rotation if specified
-    if (rotation_angles!=0).all():
-        # Create block diagonal rotation matrix
-        rotation_matrix = np.eye(9)
-        for i in range(0, 8, 2):
-            if i//2 < len(rotation_angles): # TODO needed?
-                angle = rotation_angles[i//2]
-                c, s = np.cos(angle), np.sin(angle)
-                rotation_matrix[i:i+2, i:i+2] = [[c, -s], [s, c]]
-        
-        # Apply rotation
-        if isinstance(phi, float):
-            point = rotation_matrix @ point
-        else:
-            point = rotation_matrix @ point
             
     return point.T
 

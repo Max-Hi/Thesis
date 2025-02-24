@@ -20,13 +20,13 @@ else:
 print(f"Using device: {device}")
 
 # Parameters
-epochs = 10
+epochs = 30
 learningrate = 1e-4
 weight_decay = 0
 form_function = datacreation.circle_9d
-extra_parameters = [1, np.array([0.0,0.0,0.1,0.3,1.0,0.5,0.2,0.8,0.4])]
+extra_parameters = [1] #, np.array([0.0,0.0,0.1,0.3,1.0,0.5,0.2,0.8,0.4])]
 ranges = [(0,2*np.pi)] #, (0,1)]
-dimensions = [9,128,128,64,64,32,16,8,4,2]#,2,1] 
+dimensions = [9,128,128,64,64,32,16,8,4] #,2]#,2,1] 
 
 # dataloader
 print("Generating Data")
